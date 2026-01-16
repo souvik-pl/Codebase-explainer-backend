@@ -96,9 +96,7 @@ class UploadService:
                     skipped_files.append(f"{relative_path} (empty or unreadable)")
                     continue
 
-                file_id = f"{folder_name}/{relative_path}".replace("/", "_").replace(
-                    "\\", "_"
-                )
+                file_id = f"{relative_path}".replace("/", "_").replace("\\", "_")
 
                 self.chunk_file(
                     file_id=file_id,

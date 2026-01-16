@@ -1,5 +1,5 @@
 import chromadb
-from chromadb import QueryResult
+from chromadb import QueryResult, GetResult
 from chromadb.config import Settings
 
 from models.chroma_model import ChromaStats
@@ -44,6 +44,9 @@ class ChromaRepository:
             documents=documents,
             metadatas=metadatas,
         )
+
+    def get_all(self) -> GetResult:
+        return self.collection.get(include=["documents", "metadatas", "embeddings"])
 
 
 chroma_repository = ChromaRepository()

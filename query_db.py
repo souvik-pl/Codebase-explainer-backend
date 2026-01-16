@@ -66,4 +66,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    data = chroma_repository.get_all()
+    print(data)

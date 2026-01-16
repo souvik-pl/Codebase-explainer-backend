@@ -8,7 +8,7 @@ import tree_sitter_go as tsgo
 import tree_sitter_rust as tsrust
 import tree_sitter_c as tsc
 import tree_sitter_cpp as tscpp
-from tree_sitter import Language, Parser
+from tree_sitter import Language, Parser, QueryCursor
 
 from models.code_chunk_model import CodeChunk
 
@@ -123,6 +123,19 @@ class CodeChunkService:
         except Exception:
             return self.fallback_chunk(content, file_path)
 
+    def run_query(self, language: Language, query_str: str, root_node) -> list[tuple]:
+        """Run a tree-sitter query and return captures as list of (node, capture_name) tuples"""
+        query = language.query(query_str)
+        cursor = QueryCursor(query)
+        captures_dict = cursor.captures(root_node)
+
+        captures = []
+        for capture_name, nodes in captures_dict.items():
+            for node in nodes:
+                captures.append((node, capture_name))
+
+        return captures
+
     def semantic_chunk(
         self, content: str, file_path: str, language: str
     ) -> list[CodeChunk]:
@@ -137,8 +150,9 @@ class CodeChunkService:
         processed_ranges: set[tuple[int, int]] = set()
 
         if "class_query" in config:
-            class_query = config["language"].query(config["class_query"])
-            class_captures = class_query.captures(root_node)
+            class_captures = self.run_query(
+                config["language"], config["class_query"], root_node
+            )
 
             for node, capture_name in class_captures:
                 if capture_name == "class":
@@ -163,8 +177,9 @@ class CodeChunkService:
                     )
 
         if "function_query" in config:
-            func_query = config["language"].query(config["function_query"])
-            func_captures = func_query.captures(root_node)
+            func_captures = self.run_query(
+                config["language"], config["function_query"], root_node
+            )
 
             for node, capture_name in func_captures:
                 if capture_name in ("function", "method"):
@@ -193,6 +208,12 @@ class CodeChunkService:
                             parent_class=parent_class,
                         )
                     )
+
+        module_level_chunk = self.extract_module_level(
+            lines, processed_ranges, file_path, language
+        )
+        if module_level_chunk:
+            chunks.insert(0, module_level_chunk)
 
         if not chunks:
             return self.fallback_chunk(content, file_path, language)
@@ -263,6 +284,50 @@ class CodeChunkService:
             )
 
         return chunks
+
+    def extract_module_level(
+        self,
+        lines: list[str],
+        processed_ranges: set[tuple[int, int]],
+        file_path: str,
+        language: str,
+    ) -> Optional[CodeChunk]:
+        """Extract imports, constants, and other module-level code not inside classes/functions."""
+        module_lines: list[tuple[int, str]] = []
+
+        for i, line in enumerate(lines):
+            line_in_processed = False
+            for start, end in processed_ranges:
+                if start <= i <= end:
+                    line_in_processed = True
+                    break
+
+            if not line_in_processed:
+                stripped = line.strip()
+                if stripped:
+                    module_lines.append((i, line))
+
+        if not module_lines:
+            return None
+
+        content_lines = [line for _, line in module_lines]
+        content = "\n".join(content_lines)
+
+        if not content.strip():
+            return None
+
+        first_line = module_lines[0][0] + 1
+        last_line = module_lines[-1][0] + 1
+
+        return CodeChunk(
+            content=content,
+            chunk_type="module",
+            name="imports_and_constants",
+            file_path=file_path,
+            language=language,
+            start_line=first_line,
+            end_line=last_line,
+        )
 
     def get_node_name(self, node, captures: list, language: str) -> str:
         for captured_node, capture_name in captures:
