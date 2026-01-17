@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage
+from langgraph.prebuilt import ToolNode
 
 from langgraph_agent.prompts import SYSTEM_PROMPT
 from langgraph_agent.tools import all_tools
@@ -25,4 +26,20 @@ def explainer_agent(state: dict) -> dict:
     if response is None:
         raise ValueError("Agent didn't return a valid response")
 
-    return {"messages": [response]}
+    return {"messages": messages + [response], "iteration_count": state.get("iteration_count", 0)}
+
+
+def tools_node(state: dict) -> dict:
+    tool_node = ToolNode(all_tools)
+    tool_result = tool_node.invoke(state)
+
+    # Preserve original messages and add tool results
+    original_messages = state["messages"]
+    tool_messages = tool_result["messages"]
+
+    iteration_count = state.get("iteration_count", 0) + 1
+
+    return {
+        "messages": original_messages + tool_messages,
+        "iteration_count": iteration_count,
+    }

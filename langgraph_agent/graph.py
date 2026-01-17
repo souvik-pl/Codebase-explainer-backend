@@ -1,25 +1,30 @@
 from langgraph.constants import END
 from langgraph.graph import StateGraph
-from langgraph.prebuilt import ToolNode
+from langgraph_agent.agents import explainer_agent, tools_node
 
-from langgraph_agent.agents import explainer_agent
-from langgraph_agent.tools import all_tools
+
+def should_continue(state: dict) -> str:
+    messages = state["messages"]
+    iteration_count = state.get("iteration_count", 0)
+
+    if iteration_count >= 10:
+        raise ValueError("Could not find relevant answer")
+
+    # Check if the last message has tool calls
+    if hasattr(messages[-1], "tool_calls") and messages[-1].tool_calls:
+        return "continue"
+
+    return "end"
+
 
 graph = StateGraph(dict)
 
 graph.add_node("agent", explainer_agent)
-graph.add_node("tools", ToolNode(all_tools))
-
-graph.set_entry_point("agent")
+graph.add_node("tools", tools_node)
 
 graph.add_conditional_edges(
     "agent",
-    lambda state: (
-        "continue"
-        if hasattr(state["messages"][-1], "tool_calls")
-        and state["messages"][-1].tool_calls
-        else "end"
-    ),
+    should_continue,
     {
         "continue": "tools",
         "end": END,
@@ -27,5 +32,7 @@ graph.add_conditional_edges(
 )
 
 graph.add_edge("tools", "agent")
+
+graph.set_entry_point("agent")
 
 agent = graph.compile()
