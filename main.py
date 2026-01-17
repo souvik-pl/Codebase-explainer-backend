@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 
+from api.query_api import query_bp
 from api.upload_api import upload_bp
 
 
@@ -9,6 +10,7 @@ def create_app() -> Flask:
     CORS(flask_app)
 
     flask_app.register_blueprint(upload_bp)
+    flask_app.register_blueprint(query_bp)
 
     return flask_app
 

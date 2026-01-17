@@ -18,6 +18,14 @@ dependencies = [
     "tree-sitter-rust>=0.21.0",
     "tree-sitter-c>=0.21.0",
     "tree-sitter-cpp>=0.21.0",
+    "groq>=0.31.0",
+    "langchain>=0.3.27",
+    "langchain-core>=0.3.72",
+    "langchain-groq>=0.3.7",
+    "langgraph>=0.6.3",
+    "pip>=25.2",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
 ]
 
 [dependency-groups]
