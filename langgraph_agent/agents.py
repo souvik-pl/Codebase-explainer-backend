@@ -26,7 +26,10 @@ def explainer_agent(state: dict) -> dict:
     if response is None:
         raise ValueError("Agent didn't return a valid response")
 
-    return {"messages": messages + [response], "iteration_count": state.get("iteration_count", 0)}
+    return {
+        "messages": messages + [response],
+        "iteration_count": state.get("iteration_count", 0),
+    }
 
 
 def tools_node(state: dict) -> dict:
