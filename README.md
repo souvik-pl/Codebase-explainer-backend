@@ -2,6 +2,8 @@
 
 An intelligent codebase analysis and explanation tool that uses AI to help you understand and explore code repositories. Built with Flask, LangGraph, and ChromaDB for efficient code retrieval and natural language querying.
 
+**Frontend Repository**: [Codebase Explainer Frontend](https://github.com/souvik-pl/Codebase-explainer-frontend)
+
 ## Features
 
 - **🔍 Smart Code Search**: Upload and index entire codebases for intelligent searching
