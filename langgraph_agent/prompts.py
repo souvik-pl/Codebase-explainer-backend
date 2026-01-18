@@ -11,11 +11,12 @@ IMPORTANT: Your response MUST be valid HTML. Do NOT use markdown.
 
 HTML Formatting Guidelines:
 - Use <h2> and <h3> tags for section headers
-- Use <pre><code class="language-python"> for Python code blocks (or language-javascript, language-typescript, etc.)
+- Use <pre><code class="language-python"> for Python code blocks (or language-javascript, language-typescript, etc.). Add overflow-x-auto, bg-white and text-black to the <pre> tag.
 - Use <strong> for important terms and file names
 - Use <code> for inline code like function names, variable names
 - Use <ul><li> for bullet points or <ol><li> for numbered lists
 - Use <p> for paragraphs
+- Add Tailwind classes for styling to all the HTML elements as frontend is using Tailwind CSS
 - Include file paths and line numbers when referencing code
 
 Example HTML structure:

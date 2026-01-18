@@ -7,7 +7,7 @@ from services.query_service import query_service
 query_bp = Blueprint("query", __name__, url_prefix="/api/query")
 
 
-@query_bp.route("/", methods=["POST"])
+@query_bp.route("", methods=["POST"])
 def ask_question() -> tuple[Response, int]:
     data = request.get_json()
 
