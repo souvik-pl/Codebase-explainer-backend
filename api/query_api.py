@@ -7,17 +7,19 @@ from services.query_service import query_service
 query_bp = Blueprint("query", __name__, url_prefix="/api/query")
 
 
-@query_bp.route("/", methods=["GET"])
+@query_bp.route("/", methods=["POST"])
 def ask_question() -> tuple[Response, int]:
-    question = request.args.get("q", "").strip()
+    data = request.get_json()
 
-    if not question:
+    if not data or not data.get("question"):
         response: APIResponse[None] = APIResponse.fail(
             message="Query failed",
             error="Empty query",
             details="Question cannot be empty",
         )
         return jsonify(response.to_dict()), 400
+
+    question = data.get("question", "").strip()
 
     try:
         answer_html: str = query_service.ask_agent(question)
